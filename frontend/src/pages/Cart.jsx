@@ -78,7 +78,7 @@ export default function Cart() {
                   >
                     <div className="w-16 h-16 rounded-xl overflow-hidden bg-gray-100 dark:bg-gray-800 flex-shrink-0">
                       <img
-                        src={`${import.meta.env.VITE_API_BASE?.replace('/api','') || 'http://localhost:5000'}/uploads/${item.image}`}
+                        src={`${import.meta.env.VITE_API_BASE?.replace('/api','') || 'https://nanban-backend.onrender.com'}/uploads/${item.image}`}
                         alt={item.name}
                         className="w-full h-full object-cover"
                         onError={(e)=>{e.currentTarget.style.display='none'}}
@@ -155,7 +155,7 @@ export default function Cart() {
             >
               <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-xl overflow-hidden bg-gray-100 dark:bg-gray-800 flex-shrink-0">
                 <img
-                  src={`${import.meta.env.VITE_API_BASE?.replace('/api','') || 'http://localhost:5000'}/uploads/${item.image}`}
+                  src={`${import.meta.env.VITE_API_BASE?.replace('/api','') || 'https://nanban-backend.onrender.com'}/uploads/${item.image}`}
                   alt={item.name}
                   className="w-full h-full object-cover"
                   onError={(e)=>{e.currentTarget.style.display='none'}}
@@ -231,7 +231,7 @@ export default function Cart() {
               >
                 <div className="w-16 h-16 rounded-xl overflow-hidden bg-gray-100 dark:bg-gray-800 flex-shrink-0">
                   <img
-                    src={`${import.meta.env.VITE_API_BASE?.replace('/api','') || 'http://localhost:5000'}/uploads/${item.image}`}
+                    src={`${import.meta.env.VITE_API_BASE?.replace('/api','') || 'https://nanban-backend.onrender.com'}/uploads/${item.image}`}
                     alt={item.name}
                     className="w-full h-full object-cover"
                     onError={(e)=>{e.currentTarget.style.display='none'}}

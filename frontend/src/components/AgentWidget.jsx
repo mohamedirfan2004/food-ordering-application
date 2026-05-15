@@ -15,7 +15,7 @@ export default function AgentWidget() {
   const processedToolCalls = useRef(new Set());
 
   const { messages, input, handleInputChange, handleSubmit, isLoading } = useChat({
-    api: 'http://localhost:5000/api/agent/chat',
+    api: 'https://nanban-backend.onrender.com/api/agent/chat',
     body: {
       sessionId: user?.phone || 'anonymous-session',
       phone: user?.phone

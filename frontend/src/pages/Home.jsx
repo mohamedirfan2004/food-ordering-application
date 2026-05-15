@@ -225,7 +225,7 @@ export default function Home() {
               <div className="shrink-0">
                 <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-full overflow-hidden ring-2 ring-white dark:ring-gray-800 shadow-md">
                   <img
-                    src={`${import.meta.env.VITE_API_BASE?.replace('/api','') || 'http://localhost:5000'}/uploads/${item.image}`}
+                    src={`${import.meta.env.VITE_API_BASE?.replace('/api','') || 'https://nanban-backend.onrender.com'}/uploads/${item.image}`}
                     alt={item.name}
                     className="w-full h-full object-cover"
                     onError={(e)=>{e.currentTarget.style.display='none'}}

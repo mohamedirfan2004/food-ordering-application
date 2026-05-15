@@ -346,7 +346,7 @@ export default function Orders() {
                     {o.items.map((it, idx) => (
                       <div key={idx} className="flex items-center gap-2">
                         <img
-                          src={`${import.meta.env.VITE_API_BASE?.replace('/api','') || 'http://localhost:5000'}/uploads/${it.image}`}
+                          src={`${import.meta.env.VITE_API_BASE?.replace('/api','') || 'https://nanban-backend.onrender.com'}/uploads/${it.image}`}
                           className="w-10 h-10 object-cover rounded"
                           onError={(e)=>{e.currentTarget.style.display='none'}}
                         />

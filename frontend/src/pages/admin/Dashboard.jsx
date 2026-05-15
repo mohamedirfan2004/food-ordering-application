@@ -106,7 +106,7 @@ export default function Dashboard() {
                 <div className="w-10 h-10 rounded-md overflow-hidden bg-gray-100">
                   {quickStats.topItem.image && (
                     <img
-                      src={`${import.meta.env.VITE_API_BASE?.replace('/api','') || 'http://localhost:5000'}/uploads/${quickStats.topItem.image}`}
+                      src={`${import.meta.env.VITE_API_BASE?.replace('/api','') || 'https://nanban-backend.onrender.com'}/uploads/${quickStats.topItem.image}`}
                       alt={quickStats.topItem.name}
                       className="w-full h-full object-cover"
                       onError={e => { e.currentTarget.style.display = 'none' }}

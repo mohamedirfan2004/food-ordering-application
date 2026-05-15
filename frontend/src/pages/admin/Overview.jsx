@@ -42,7 +42,7 @@ export default function Overview() {
     })()
 
     // --- Real-time Updates via Socket.io ---
-    const socket = io(import.meta.env.VITE_API_BASE?.replace('/api','') || 'http://localhost:5000')
+    const socket = io(import.meta.env.VITE_API_BASE?.replace('/api','') || 'https://nanban-backend.onrender.com')
 
     socket.on('newOrder', (newOrder) => {
       setOrders(prev => [newOrder, ...prev])

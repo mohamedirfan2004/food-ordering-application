@@ -3,7 +3,7 @@ import { io } from 'socket.io-client'
 import api from '../../lib/api'
 
 const SOCKET_URL =
-  (import.meta.env.VITE_API_BASE?.replace('/api', '')) || 'http://localhost:5000'
+  (import.meta.env.VITE_API_BASE?.replace('/api', '')) || 'https://nanban-backend.onrender.com'
 
 export default function LiveOrders() {
   const [orders, setOrders] = useState([])

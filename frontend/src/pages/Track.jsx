@@ -193,7 +193,7 @@ export default function Track() {
               }, {})).map((it, idx) => (
                 <div key={idx} className="flex items-center gap-3">
                   <div className="w-12 h-12 rounded-lg overflow-hidden bg-gray-100 dark:bg-gray-800 flex-shrink-0">
-                    <img src={`${import.meta.env.VITE_API_BASE?.replace('/api','') || 'http://localhost:5000'}/uploads/${it.image}`} className="w-full h-full object-cover" onError={(e)=>{e.currentTarget.style.display='none'}} />
+                    <img src={`${import.meta.env.VITE_API_BASE?.replace('/api','') || 'https://nanban-backend.onrender.com'}/uploads/${it.image}`} className="w-full h-full object-cover" onError={(e)=>{e.currentTarget.style.display='none'}} />
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="text-sm font-medium text-gray-900 dark:text-white truncate">{it.name}</div>

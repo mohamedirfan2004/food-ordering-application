@@ -173,7 +173,7 @@ export default function Categories() {
                           <div className="flex-shrink-0 h-10 w-10 mr-3">
                             <img
                               className="h-10 w-10 rounded-full object-cover"
-                              src={`${import.meta.env.VITE_API_BASE?.replace('/api','') || 'http://localhost:5000'}/uploads/${category.image}`}
+                              src={`${import.meta.env.VITE_API_BASE?.replace('/api','') || 'https://nanban-backend.onrender.com'}/uploads/${category.image}`}
                               alt={category.name}
                               onError={e => { e.currentTarget.style.display = 'none' }}
                             />

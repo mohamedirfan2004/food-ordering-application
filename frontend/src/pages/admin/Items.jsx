@@ -124,7 +124,7 @@ export default function Items() {
           <div className="grid gap-3">
             {items.map(i => (
               <div key={i._id} className="card p-3 flex items-center gap-3">
-                <img src={`${import.meta.env.VITE_API_BASE?.replace('/api','') || 'http://localhost:5000'}/uploads/${i.image}`} className="w-16 h-16 object-cover rounded" onError={(e)=>{e.currentTarget.style.display='none'}} />
+                <img src={`${import.meta.env.VITE_API_BASE?.replace('/api','') || 'https://nanban-backend.onrender.com'}/uploads/${i.image}`} className="w-16 h-16 object-cover rounded" onError={(e)=>{e.currentTarget.style.display='none'}} />
                 <div className="flex-1">
                   <div className="font-medium text-gray-900 dark:text-gray-100">{i.name} <span className="text-xs text-gray-500 dark:text-gray-400">({i.category})</span></div>
                   <div className="text-sm text-gray-700 dark:text-gray-300 line-clamp-2">{i.description}</div>
