@@ -18,9 +18,15 @@ const startOrderHistoryCleanupJob = require('./jobs/orderHistoryCleanup');
 
 const app = express();
 const server = require('http').createServer(app);
+
+// --- UPDATED SOCKET.IO CORS ---
 const io = require('socket.io')(server, {
   cors: {
-    origin: ['http://localhost:5173', 'http://127.0.0.1:5173', 'http://localhost:5000'],
+    origin: [
+      'http://localhost:5173', 
+      'http://127.0.0.1:5173', 
+      'https://nanban-restaurant.vercel.app' // Unga Vercel URL
+    ],
     methods: ['GET', 'POST'],
     credentials: true
   }
@@ -29,18 +35,24 @@ const io = require('socket.io')(server, {
 // Make io accessible in our routes
 app.set('io', io);
 
-// Middleware
+// --- UPDATED EXPRESS CORS ---
 app.use(cors({
-  origin: ['http://localhost:5173', 'http://127.0.0.1:5173', 'http://localhost:5000'],
+  origin: [
+    'http://localhost:5173', 
+    'http://127.0.0.1:5173', 
+    'https://nanban-restaurant.vercel.app' // Unga Vercel URL
+  ],
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
   credentials: true
 }));
+
 app.use(express.json());
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
-// Database connection
-const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/food_ordering';
+// --- DATABASE CONNECTION CHECK ---
+// Render-la neenga MONGO_URI nu kuduthuruntha ithu correct-ah connect aagum
+const MONGODB_URI = process.env.MONGODB_URI || process.env.MONGO_URI || 'mongodb://localhost:27017/food_ordering';
 
 const startServer = async () => {
     try {
@@ -72,6 +84,7 @@ const startServer = async () => {
         console.error('MongoDB connection error:', err);
     }
 };
+
 // Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/menu', menuRoutes);
@@ -83,7 +96,7 @@ app.use('/api/hero', heroRoutes);
 app.use('/api/customers', customerRoutes);
 app.use('/api/settings', settingsRoutes);
 
-// Default admin user setup (credentials can be overridden via env vars)
+// Default admin user setup
 const Admin = require('./models/Admin');
 const createDefaultAdmin = async () => {
     try {
@@ -102,13 +115,11 @@ const createDefaultAdmin = async () => {
         if (!adminExists) {
             const admin = new Admin({
                 username: defaultUsername,
-                password: defaultPassword // Will be hashed by the pre-save hook
+                password: defaultPassword 
             });
             await admin.save();
             console.log(`Default admin user created with username "${defaultUsername}"`);
         } else {
-            // Always ensure the password matches what's in the current .env for the default admin
-            // This allows easy password resets via .env change
             adminExists.password = defaultPassword;
             await adminExists.save();
             console.log(`Default admin user "${defaultUsername}" verified/updated.`);
@@ -120,4 +131,3 @@ const createDefaultAdmin = async () => {
 
 // Kick off startup
 startServer();
-
