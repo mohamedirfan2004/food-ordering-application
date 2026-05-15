@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="32" height="32" fill="none">
+  <rect width="64" height="64" rx="12" fill="#f97316"/>
+  <!-- Crossed fork and spoon -->
+  <g stroke="#ffffff" stroke-width="4" stroke-linecap="round" stroke-linejoin="round">
+    <!-- Spoon -->
+    <path d="M44 16c4 4 4 8 0 12s-8 4-12 0" />
+    <path d="M32 28 L18 42" />
+    <!-- Fork -->
+    <path d="M20 16 l28 28" />
+    <path d="M40 18 v6" />
+    <path d="M46 24 h-6" />
+  </g>
+</svg>
