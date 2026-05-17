@@ -19,9 +19,6 @@ export default function Orders() {
   const [filter, setFilter] = useState('')
   const [view, setView] = useState('live')
   const [error, setError] = useState('')
-  const [adminProfile, setAdminProfile] = useState(null)
-  const [profileLoading, setProfileLoading] = useState(true)
-  const [savingSettings, setSavingSettings] = useState(false)
   const { addToast } = useToast()
   const confirm = useConfirm()
   const navigate = useNavigate()
@@ -42,21 +39,6 @@ export default function Orders() {
 
   useEffect(()=>{ load() }, [])
 
-  useEffect(() => {
-    let mounted = true
-    ;(async () => {
-      try {
-        const res = await api.get('/auth/profile')
-        if (!mounted) return
-        setAdminProfile(res.data)
-      } catch (e) {
-        // profile is optional; ignore error
-      } finally {
-        if (mounted) setProfileLoading(false)
-      }
-    })()
-    return () => { mounted = false }
-  }, [])
 
   const advanceStatus = async (order) => {
     const idx = STATUS.indexOf(order.status)
@@ -87,24 +69,7 @@ export default function Orders() {
     }
   }
 
-  const handleSavePrintSettings = async () => {
-    setSavingSettings(true)
-    try {
-      await api.put('/auth/print-settings', {
-        canPrint: adminProfile.canPrint,
-        defaultFormat: adminProfile.printSettings?.defaultFormat,
-        footerText: adminProfile.printSettings?.footerText,
-      })
-      addToast('success', 'Print settings saved')
-    } catch (e) {
-      setError('Failed to save print settings')
-      addToast('error', 'Failed to save print settings')
-    } finally {
-      setSavingSettings(false)
-    }
-  }
-
-  const canPrint = adminProfile ? (adminProfile.canPrint !== false) : true
+  const canPrint = true
 
   const isLiveOrder = (o) => {
     if (o.status === 'cancelled') return false
@@ -171,54 +136,7 @@ export default function Orders() {
           </div>
         </div>
       </div>
-      {view === 'live' && !profileLoading && adminProfile && (
-        <div className="mb-4 card p-3 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs sm:text-sm">
-          <div>
-            <div className="font-medium">Print settings</div>
-            <div className="text-[11px] text-gray-500">Control default print format and footer text for slips.</div>
-          </div>
-          <div className="flex flex-wrap items-center gap-2">
-            <label className="flex items-center gap-1">
-              <input
-                type="checkbox"
-                className="rounded"
-                checked={adminProfile.canPrint !== false}
-                onChange={e => setAdminProfile(prev => ({ ...(prev || {}), canPrint: e.target.checked }))}
-              />
-              <span>Allow printing</span>
-            </label>
-            <select
-              className="border rounded px-2 py-1 text-xs"
-              value={adminProfile.printSettings?.defaultFormat || 'both'}
-              onChange={e => setAdminProfile(prev => ({
-                ...(prev || {}),
-                printSettings: { ...(prev?.printSettings || {}), defaultFormat: e.target.value }
-              }))}
-            >
-              <option value="kot">KOT</option>
-              <option value="bill">Bill</option>
-              <option value="both">Both</option>
-            </select>
-            <input
-              className="input text-xs min-w-[180px]"
-              placeholder="Footer text"
-              value={adminProfile.printSettings?.footerText || ''}
-              onChange={e => setAdminProfile(prev => ({
-                ...(prev || {}),
-                printSettings: { ...(prev?.printSettings || {}), footerText: e.target.value }
-              }))}
-            />
-            <button
-              type="button"
-              className="btn-primary px-3 py-1 h-8 text-xs"
-              onClick={handleSavePrintSettings}
-              disabled={savingSettings}
-            >
-              {savingSettings ? 'Saving…' : 'Save'}
-            </button>
-          </div>
-        </div>
-      )}
+
       {error && <div className="mb-2 text-sm text-red-600">{error}</div>}
       {loading ? 'Loading…' : (
         <div className="space-y-3">

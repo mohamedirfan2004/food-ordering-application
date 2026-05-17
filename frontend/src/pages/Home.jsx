@@ -241,16 +241,16 @@ export default function Home() {
                 <div className="mt-1 text-[11px] text-gray-500 dark:text-gray-400 flex items-center gap-2 flex-wrap">
                   <span>Category: {item.category}</span>
                   {!availableNow && (
-                    <span className="inline-flex items-center rounded-full bg-gray-800 text-white px-2 py-0.5 text-[10px] uppercase tracking-wide">
+                    <span className="inline-flex items-center rounded-full bg-red-50 dark:bg-red-950/20 text-red-600 dark:text-red-400 px-2 py-0.5 text-[10px] uppercase tracking-wide font-semibold">
                       Not available now
                     </span>
                   )}
-                  {!availableNow && item.availabilityType === 'scheduled' && (item.scheduleStart || item.scheduleEnd) && (
-                    <span className="text-gray-500">
-                      Available {item.scheduleStart || '--:--'} – {item.scheduleEnd || '--:--'}
-                    </span>
-                  )}
                 </div>
+                {(item.availabilityType === 'scheduled' || item.availabilityType === 'Scheduled (time based)' || (item.scheduleStart && item.scheduleEnd)) && (
+                  <div className="mt-2 text-xs font-medium text-orange-600 dark:text-orange-400 flex items-center gap-1">
+                    <span className="text-sm">⏱️</span> Available {item.scheduleStart} – {item.scheduleEnd}
+                  </div>
+                )}
                 {qty === 0 ? (
                   <div className="mt-2 flex justify-end">
                     <button

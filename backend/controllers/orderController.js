@@ -17,6 +17,38 @@ const formatPhoneNumber = (phone) => {
 	return `+${cleaned}`;
 };
 
+// Helper to convert 12-hour time strings (like '04:30 PM') into minutes past midnight (0 to 1440)
+const parse12HourToMinutes = (timeStr) => {
+    if (!timeStr || typeof timeStr !== 'string') return null;
+    
+    // Support formats like "04:30 PM", "4:30 PM", "12:00 AM", "12:00PM"
+    const match = timeStr.trim().match(/^(\d{1,2}):(\d{2})\s*(AM|PM)$/i);
+    if (!match) {
+        // Fallback: try parsing as 24-hour time "HH:MM" if AM/PM is not present
+        const parts = timeStr.trim().split(':');
+        if (parts.length >= 2) {
+            const h = Number(parts[0]);
+            const m = Number(parts[1]);
+            if (!Number.isNaN(h) && !Number.isNaN(m)) {
+                return h * 60 + m;
+            }
+        }
+        return null;
+    }
+    
+    let hours = Number(match[1]);
+    const minutes = Number(match[2]);
+    const ampm = match[3].toUpperCase();
+    
+    if (ampm === 'PM' && hours < 12) {
+        hours += 12;
+    } else if (ampm === 'AM' && hours === 12) {
+        hours = 0;
+    }
+    
+    return hours * 60 + minutes;
+};
+
 // Determine if a menu item is currently available based on manual flag and schedule
 const isFoodItemAvailableNow = (foodItem) => {
     if (!foodItem) return false;
@@ -24,30 +56,51 @@ const isFoodItemAvailableNow = (foodItem) => {
     // Manual disable always wins
     if (foodItem.isAvailable === false) return false;
 
-    // Default: always available
-    if (!foodItem.availabilityType || foodItem.availabilityType === 'always') {
+    // Ensure this logic only runs if item.availabilityType is scheduled
+    const isScheduled = foodItem.availabilityType === 'scheduled' || 
+                        foodItem.availabilityType === 'Scheduled (time based)';
+    if (!isScheduled) {
         return true;
     }
 
-    // Scheduled availability using local server time (HH:MM)
+    // Scheduled availability
     const start = foodItem.scheduleStart;
     const end = foodItem.scheduleEnd;
     if (!start || !end) return false;
 
-    const [sh, sm] = start.split(':').map(Number);
-    const [eh, em] = end.split(':').map(Number);
-    if ([sh, sm, eh, em].some(v => Number.isNaN(v))) return false;
+    // Convert startTime and endTime to minutes past midnight
+    const startMinutes = parse12HourToMinutes(start);
+    const endMinutes = parse12HourToMinutes(end);
+    if (startMinutes === null || endMinutes === null) return false;
 
-    const now = new Date();
-    const nowMinutes = now.getHours() * 60 + now.getMinutes();
-    const startMinutes = sh * 60 + sm;
-    const endMinutes = eh * 60 + em;
+    // Get current time explicitly in 'Asia/Kolkata' timezone and convert to minutes past midnight
+    const kolkataTimeString = new Date().toLocaleTimeString("en-US", { timeZone: "Asia/Kolkata", hour12: false });
+    const [kh, km] = kolkataTimeString.split(':').map(Number);
+    const currentMinutes = kh * 60 + km;
 
-    // Support windows that may cross midnight (e.g. 22:00–02:00)
+    // Detailed console.log before the condition check
+    console.log('[DEBUG Availability]', {
+        foodItemName: foodItem.name,
+        availabilityType: foodItem.availabilityType,
+        rawScheduleStart: start,
+        rawScheduleEnd: end,
+        parsedStartMinutes: startMinutes,
+        parsedEndMinutes: endMinutes,
+        currentMinutesIST: currentMinutes,
+        currentTimeIST: kolkataTimeString
+    });
+
+    // Mathematical comparison supporting standard and overnight intervals
     if (startMinutes <= endMinutes) {
-        return nowMinutes >= startMinutes && nowMinutes < endMinutes;
+        const isAvailable = currentMinutes >= startMinutes && currentMinutes <= endMinutes;
+        console.log(`[DEBUG Availability Result] Standard comparison: ${currentMinutes} between ${startMinutes} and ${endMinutes} => ${isAvailable}`);
+        return isAvailable;
+    } else {
+        // Over-midnight interval (e.g. 10:00 PM to 02:00 AM)
+        const isAvailable = currentMinutes >= startMinutes || currentMinutes <= endMinutes;
+        console.log(`[DEBUG Availability Result] Overnight comparison: ${currentMinutes} >= ${startMinutes} or <= ${endMinutes} => ${isAvailable}`);
+        return isAvailable;
     }
-    return nowMinutes >= startMinutes || nowMinutes < endMinutes;
 };
 
 // @desc    Create a new order or append to an existing open order
@@ -74,28 +127,36 @@ exports.createOrder = async (req, res) => {
             await customer.save();
         }
 
+        const orderCustomerName = customerName || (customer && customer.name) || 'Guest';
+
         if (!items || !Array.isArray(items) || items.length === 0) {
             return res.status(400).json({ message: 'Order items are required' });
         }
 
-        // Create order items array with food item details and validate availability
+        // Validate and populate items from DB to prevent Mongoose validation errors
+        const orderItems = [];
         const unavailableNames = [];
-        const orderItems = await Promise.all(items.map(async (item) => {
-            const foodItem = await FoodItem.findById(item.foodItem);
-            if (!foodItem) throw new Error('Food item not found');
-
+        
+        for (const item of items) {
+            const itemId = item.foodItem || item._id;
+            if (!itemId) {
+                return res.status(400).json({ message: 'Invalid item format' });
+            }
+            const foodItem = await FoodItem.findById(itemId);
+            if (!foodItem) {
+                return res.status(404).json({ message: `Food item not found for ID: ${itemId}` });
+            }
             if (!isFoodItemAvailableNow(foodItem)) {
                 unavailableNames.push(foodItem.name || 'Unknown item');
             }
-
-            return {
-                foodItem: item.foodItem,
-                quantity: item.quantity,
+            orderItems.push({
+                foodItem: foodItem._id,
+                quantity: Number(item.quantity) || 1,
                 price: foodItem.price,
                 name: foodItem.name,
                 image: foodItem.image
-            };
-        }));
+            });
+        }
 
         if (unavailableNames.length > 0) {
             return res.status(400).json({
@@ -103,35 +164,31 @@ exports.createOrder = async (req, res) => {
             });
         }
 
-        // Try to find an existing open order for this customer
+        // Continuous Ordering: Check if an active order already exists for that specific table
         let existingOrder = null;
+        if (table) {
+            existingOrder = await Order.findOne({
+                table: table,
+                status: { $in: ['pending', 'preparing'] }
+            }).sort({ createdAt: -1 });
+        }
 
-        // 1) Prefer explicit orderNumber if provided
-        if (orderNumber) {
+        // Fallback: If no table match, check by orderNumber if explicitly provided
+        if (!existingOrder && orderNumber) {
             existingOrder = await Order.findOne({
                 orderNumber,
                 status: { $in: ['pending', 'preparing'] }
             });
         }
 
-        // 2) Otherwise, match on phone + table for open orders
-        if (!existingOrder) {
-            const tableValue = table || '';
-            existingOrder = await Order.findOne({
-                phone,
-                table: tableValue,
-                status: { $in: ['pending', 'preparing'] }
-            }).sort({ createdAt: -1 });
-        }
-
         if (existingOrder) {
-            // Append new items to existing order without merging quantities
+            // Append new items to existing order without merging quantities (keeping them distinct for admin acknowledgement)
             orderItems.forEach(newItem => {
                 newItem.isNewItem = true;
                 existingOrder.items.push(newItem);
             });
 
-            // Recalculate totalAmount on the server
+            // Recalculate totalAmount on the server using DB-fetched prices
             existingOrder.totalAmount = existingOrder.items.reduce(
                 (sum, it) => sum + (it.price * it.quantity),
                 0
@@ -147,15 +204,15 @@ exports.createOrder = async (req, res) => {
             }
 
             // Keep customer name filled if previously empty
-            if (customerName && !existingOrder.customerName) {
-                existingOrder.customerName = customerName;
+            if (orderCustomerName && !existingOrder.customerName) {
+                existingOrder.customerName = orderCustomerName;
             }
 
             // Ensure this order is linked in the customer's history
             if (!customer.orders.some(id => id.equals(existingOrder._id))) {
                 customer.orders.push(existingOrder._id);
-                if (customerName && !customer.name) {
-                    customer.name = customerName;
+                if (orderCustomerName && !customer.name) {
+                    customer.name = orderCustomerName;
                 }
                 await customer.save();
             }
@@ -178,7 +235,7 @@ exports.createOrder = async (req, res) => {
         );
 
         const order = new Order({
-            customerName,
+            customerName: orderCustomerName,
             phone,
             address,
             table: table || '',
@@ -191,8 +248,8 @@ exports.createOrder = async (req, res) => {
 
         // Attach order to customer history
         customer.orders.push(createdOrder._id);
-        if (customerName && !customer.name) {
-            customer.name = customerName;
+        if (orderCustomerName && !customer.name) {
+            customer.name = orderCustomerName;
         }
         await customer.save();
 
@@ -205,6 +262,9 @@ exports.createOrder = async (req, res) => {
         }
     } catch (err) {
         console.error('Error creating order:', err);
+        if (err.name === 'ValidationError') {
+            return res.status(400).json({ message: err.message });
+        }
         res.status(500).json({ message: 'Server error' });
     }
 };
