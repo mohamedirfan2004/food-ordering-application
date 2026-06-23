@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react'
 import api from '../../lib/api'
 import { useToast } from '../../context/ToastContext'
 import { useConfirm } from '../../context/ConfirmContext'
+import { getLocalImageSrc } from '../../utils/imageHelper'
 
 export default function Items() {
   const [items, setItems] = useState([])
@@ -12,7 +13,7 @@ export default function Items() {
     description: '',
     price: '',
     category: 'main',
-    image: null,
+    image: '',
     isAvailable: true,
     availabilityType: 'always',
     scheduleStart: '',
@@ -56,33 +57,28 @@ export default function Items() {
     e.preventDefault()
     setError('')
     try {
-      const fd = new FormData()
-      fd.append('name', form.name)
-      fd.append('description', form.description)
-      fd.append('price', form.price)
-      fd.append('category', form.category)
-      fd.append('isAvailable', form.isAvailable ? 'true' : 'false')
-      fd.append('availabilityType', form.availabilityType)
-      if (form.availabilityType === 'scheduled') {
-        fd.append('scheduleStart', form.scheduleStart || '')
-        fd.append('scheduleEnd', form.scheduleEnd || '')
-      } else {
-        fd.append('scheduleStart', '')
-        fd.append('scheduleEnd', '')
+      const payload = { ...form }
+      if (form.availabilityType !== 'scheduled') {
+        payload.scheduleStart = ''
+        payload.scheduleEnd = ''
       }
-      if (form.image) fd.append('image', form.image)
+      
+      console.log("Submitting payload:", payload);
+
       if (editingId) {
-        await api.put(`/menu/${editingId}`, fd, { headers: { 'Content-Type': 'multipart/form-data' } })
+        await api.put(`/menu/${editingId}`, payload, { headers: { 'Content-Type': 'application/json' } })
         addToast('success', 'Item updated')
       } else {
-        await api.post('/menu', fd, { headers: { 'Content-Type': 'multipart/form-data' } })
+        await api.post('/menu', payload, { headers: { 'Content-Type': 'application/json' } })
         addToast('success', 'Item created')
       }
-      setForm({ name: '', description: '', price: '', category: 'main', image: null, isAvailable: true, availabilityType: 'always', scheduleStart: '', scheduleEnd: '' })
+      setForm({ name: '', description: '', price: '', category: 'main', image: '', isAvailable: true, availabilityType: 'always', scheduleStart: '', scheduleEnd: '' })
       setEditingId(null)
       await load()
     } catch (e) {
-      const msg = e?.response?.data?.message || 'Save failed'
+      const msg = e?.response?.data?.message || e.message || 'Save failed'
+      console.error("Save failed:", e);
+      alert("Error saving item: " + msg);
       setError(msg)
       addToast('error', msg)
     }
@@ -95,7 +91,7 @@ export default function Items() {
       description: item.description,
       price: item.price,
       category: item.category,
-      image: null,
+      image: item.image || '',
       isAvailable: item.isAvailable !== false,
       availabilityType: item.availabilityType || 'always',
       scheduleStart: item.scheduleStart || '',
@@ -124,7 +120,16 @@ export default function Items() {
           <div className="grid gap-3">
             {items.map(i => (
               <div key={i._id} className="card p-3 flex items-center gap-3">
-                <img src={`${import.meta.env.VITE_API_BASE?.replace('/api','') || 'https://nanban-backend.onrender.com'}/uploads/${i.image}`} className="w-16 h-16 object-cover rounded" onError={(e)=>{e.currentTarget.style.display='none'}} />
+                <div className="shrink-0 w-16 h-16 bg-gray-50 dark:bg-gray-800 rounded-md overflow-hidden relative border border-gray-100 dark:border-gray-700">
+                  <img 
+                    src={i.image} 
+                    alt={i.name} 
+                    className="w-full h-full object-cover absolute inset-0" 
+                    onError={(e) => {
+                      e.currentTarget.style.display = 'none';
+                    }} 
+                  />
+                </div>
                 <div className="flex-1">
                   <div className="font-medium text-gray-900 dark:text-gray-100">{i.name} <span className="text-xs text-gray-500 dark:text-gray-400">({i.category})</span></div>
                   <div className="text-sm text-gray-700 dark:text-gray-300 line-clamp-2">{i.description}</div>
@@ -178,7 +183,24 @@ export default function Items() {
           </div>
           <div>
             <label className="block text-sm mb-1">Image</label>
-            <input type="file" accept="image/*" onChange={e=>setForm({...form, image: e.target.files?.[0] || null})} />
+            <input 
+              type="file" 
+              accept="image/*" 
+              className="input p-1" 
+              onChange={e => {
+                const file = e.target.files?.[0];
+                if (file) {
+                  const reader = new FileReader();
+                  reader.onloadend = () => {
+                    setForm({ ...form, image: reader.result });
+                  };
+                  reader.readAsDataURL(file);
+                }
+              }} 
+            />
+            {form.image && (
+               <img src={form.image} alt="Preview" className="mt-2 w-16 h-16 object-cover rounded border border-gray-200" />
+            )}
           </div>
           <div className="border-t border-gray-100 pt-3 mt-1 space-y-2">
             <div className="flex items-center justify-between gap-2">
@@ -230,7 +252,7 @@ export default function Items() {
           </div>
           <div className="flex gap-2">
             <button className="bg-brand-600 text-white rounded px-3 py-2 text-sm">{editingId ? 'Update' : 'Create'}</button>
-            {editingId && <button type="button" className="border rounded px-3 py-2 text-sm" onClick={()=>{setEditingId(null); setForm({ name:'', description:'', price:'', category:'main', image:null, isAvailable: true, availabilityType: 'always', scheduleStart: '', scheduleEnd: '' })}}>Cancel</button>}
+            {editingId && <button type="button" className="border rounded px-3 py-2 text-sm" onClick={()=>{setEditingId(null); setForm({ name:'', description:'', price:'', category:'main', image:'', isAvailable: true, availabilityType: 'always', scheduleStart: '', scheduleEnd: '' })}}>Cancel</button>}
           </div>
         </form>
       </div>

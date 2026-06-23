@@ -11,6 +11,8 @@ import OrderPrint from './pages/admin/OrderPrint';
 import TableOrder from './pages/TableOrder';
 import { CartProvider } from './context/CartContext';
 import NavBar from './components/NavBar';
+import BottomNav from './components/BottomNav';
+import Menu from './pages/Menu';
 import { ToastProvider } from './context/ToastContext';
 import { ConfirmProvider } from './context/ConfirmContext';
 import GeofenceGuard from './components/GeofenceGuard';
@@ -52,6 +54,7 @@ function AppContent() {
           <Route path="/admin/login" element={<AdminLogin />} />
           <Route path="/history" element={<Track />} />
           <Route path="/" element={<Home />} />
+          <Route path="/menu" element={<Menu />} />
           <Route path="/cart" element={<Cart />} />
           <Route path="/checkout" element={<Checkout />} />
           <Route path="/table/:tableId" element={<TableOrder />} />
@@ -88,12 +91,13 @@ function AppContent() {
         </GeofenceGuard>
       </main>
       {!isAdminLogin && (
-        <footer className="border-t bg-white dark:bg-gray-950 dark:border-gray-800 transition-colors duration-500">
+        <footer className="border-t bg-white dark:bg-gray-950 dark:border-gray-800 transition-colors duration-500 hidden md:block">
           <div className="container py-4 text-sm text-gray-500">
             © {new Date().getFullYear()} Nanban Restaurant
           </div>
         </footer>
       )}
+      {!isAdminLogin && <BottomNav />}
     </div>
   );
 }

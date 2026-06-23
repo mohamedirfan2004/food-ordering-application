@@ -23,8 +23,7 @@ exports.listAll = async (req, res) => {
 // Admin: create category
 exports.create = async (req, res) => {
   try {
-    let { name, key, order, active, description } = req.body;
-    const image = req.file ? req.file.filename : '';
+    let { name, key, order, active, description, image } = req.body;
 
     const activeSource = typeof active !== 'undefined' ? active : req.body.isActive;
     if (typeof activeSource === 'undefined' || activeSource === null || activeSource === '') {
@@ -69,7 +68,7 @@ exports.update = async (req, res) => {
       updates.active = updates.active === 'true' || updates.active === true;
     }
 
-    if (req.file) updates.image = req.file.filename;
+    if (req.body.image !== undefined) updates.image = req.body.image;
     const cat = await Category.findByIdAndUpdate(req.params.id, updates, { new: true });
     if (!cat) return res.status(404).json({ message: 'Not found' });
     res.json(cat);

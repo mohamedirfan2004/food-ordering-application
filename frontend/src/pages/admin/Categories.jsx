@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import api from '../../lib/api';
-import { useToast } from '../../context/ToastContext';
 import { useConfirm } from '../../context/ConfirmContext';
+import { useToast } from '../../context/ToastContext';
 
 export default function Categories() {
   const [categories, setCategories] = useState([]);
@@ -11,7 +11,7 @@ export default function Categories() {
     name: '',
     description: '',
     isActive: true,
-    image: null
+    image: ''
   });
   const [editingId, setEditingId] = useState(null);
   const { addToast } = useToast();
@@ -43,7 +43,7 @@ export default function Categories() {
 
   const openAddModal = () => {
     setEditingId(null);
-    setFormData({ name: '', description: '', isActive: true, image: null });
+    setFormData({ name: '', description: '', isActive: true, image: '' });
     setIsModalOpen(true);
   };
 
@@ -53,7 +53,7 @@ export default function Categories() {
       name: category.name || '',
       description: category.description || '',
       isActive: typeof category.isActive === 'boolean' ? category.isActive : !!category.active,
-      image: null,
+      image: category.image || '',
     });
     setIsModalOpen(true);
   };
@@ -77,35 +77,41 @@ export default function Categories() {
 
   const handleInputChange = (e) => {
     const { name, value, type, checked, files } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: type === 'checkbox' ? checked : type === 'file' ? files[0] : value
-    }));
+    if (type === 'file') {
+      const file = files?.[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          setFormData(prev => ({ ...prev, image: reader.result }));
+        };
+        reader.readAsDataURL(file);
+      }
+    } else {
+      setFormData(prev => ({
+        ...prev,
+        [name]: type === 'checkbox' ? checked : value
+      }));
+    }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const formDataToSend = new FormData();
-      Object.entries(formData).forEach(([key, value]) => {
-        if (value !== null && value !== undefined) {
-          formDataToSend.append(key, value);
-        }
-      });
+      const payload = { ...formData };
 
       if (editingId) {
-        await api.put(`/categories/${editingId}`, formDataToSend, {
-          headers: { 'Content-Type': 'multipart/form-data' },
+        await api.put(`/categories/${editingId}`, payload, {
+          headers: { 'Content-Type': 'application/json' },
         });
         addToast('success', 'Category updated successfully');
       } else {
-        await api.post('/categories', formDataToSend, {
-          headers: { 'Content-Type': 'multipart/form-data' },
+        await api.post('/categories', payload, {
+          headers: { 'Content-Type': 'application/json' },
         });
         addToast('success', 'Category added successfully');
       }
       setIsModalOpen(false);
-      setFormData({ name: '', description: '', isActive: true, image: null });
+      setFormData({ name: '', description: '', isActive: true, image: '' });
       fetchCategories();
     } catch (error) {
       console.error('Error adding category:', error);
@@ -164,38 +170,38 @@ export default function Categories() {
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {categories.length > 0 ? (
-                categories.map((category) => (
-                  <tr key={category._id} className="hover:bg-gray-50">
+              {categories?.length > 0 ? (
+                categories?.map((category) => (
+                  <tr key={category?._id} className="hover:bg-gray-50">
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center">
-                        {category.image && (
+                        {category?.image && (
                           <div className="flex-shrink-0 h-10 w-10 mr-3">
                             <img
                               className="h-10 w-10 rounded-full object-cover"
-                              src={`${import.meta.env.VITE_API_BASE?.replace('/api','') || 'https://nanban-backend.onrender.com'}/uploads/${category.image}`}
-                              alt={category.name}
+                              src={category?.image}
+                              alt={category?.name || 'Category'}
                               onError={e => { e.currentTarget.style.display = 'none' }}
                             />
                           </div>
                         )}
-                        <div className="text-sm font-medium text-gray-900">{category.name}</div>
+                        <div className="text-sm font-medium text-gray-900">{category?.name}</div>
                       </div>
                     </td>
                     <td className="px-6 py-4">
-                      <div className="text-sm text-gray-500 line-clamp-2">{category.description}</div>
+                      <div className="text-sm text-gray-500 line-clamp-2">{category?.description}</div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${category.isActive ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
-                        {category.isActive ? 'Active' : 'Inactive'}
+                      <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${category?.isActive ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
+                        {category?.isActive ? 'Active' : 'Inactive'}
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                       <button
-                        onClick={() => toggleCategoryStatus(category._id, category.isActive)}
-                        className={`mr-3 ${category.isActive ? 'text-yellow-600 hover:text-yellow-900' : 'text-green-600 hover:text-green-900'}`}
+                        onClick={() => toggleCategoryStatus(category?._id, category?.isActive)}
+                        className={`mr-3 ${category?.isActive ? 'text-yellow-600 hover:text-yellow-900' : 'text-green-600 hover:text-green-900'}`}
                       >
-                        {category.isActive ? 'Disable' : 'Enable'}
+                        {category?.isActive ? 'Disable' : 'Enable'}
                       </button>
                       <button
                         className="text-blue-600 hover:text-blue-900 mr-3"
@@ -205,7 +211,7 @@ export default function Categories() {
                       </button>
                       <button
                         className="text-red-600 hover:text-red-900"
-                        onClick={() => handleDelete(category._id)}
+                        onClick={() => handleDelete(category?._id)}
                       >
                         Delete
                       </button>
@@ -272,6 +278,9 @@ export default function Categories() {
                     onChange={handleInputChange}
                     className="mt-1 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-brand-50 file:text-brand-700 hover:file:bg-brand-100"
                   />
+                  {formData.image && (
+                    <img src={formData.image} alt="Preview" className="mt-2 w-16 h-16 object-cover rounded border border-gray-200" />
+                  )}
                 </div>
                 <div className="flex items-center">
                   <input
@@ -293,7 +302,7 @@ export default function Categories() {
                   onClick={() => {
                     setIsModalOpen(false);
                     setEditingId(null);
-                    setFormData({ name: '', description: '', isActive: true, image: null });
+                    setFormData({ name: '', description: '', isActive: true, image: '' });
                   }}
                   className="btn btn-outline"
                 >

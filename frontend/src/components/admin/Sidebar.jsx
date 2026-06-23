@@ -10,6 +10,7 @@ export default function AdminSidebar({ current, onChange }) {
     { key: 'reports', label: 'Reports', icon: '📈' },
     { key: 'hero', label: 'Hero', icon: '🎨' },
     { key: 'customers', label: 'Customers', icon: '👤' },
+    { key: 'footer', label: 'Footer', icon: '⚙️' },
   ]
   return (
     <aside className="w-56 bg-black text-gray-200 rounded-lg p-3 h-full">

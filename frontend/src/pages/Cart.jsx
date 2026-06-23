@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import { useCart } from '../context/CartContext'
 import { useToast } from '../context/ToastContext'
 import api from '../lib/api'
+import { getLocalImageSrc } from '../utils/imageHelper'
 
 const isItemAvailableNow = (item) => {
   if (!item) return false
@@ -76,14 +77,16 @@ export default function Cart() {
                     className="card flex items-center gap-3 p-3 rounded-2xl bg-white dark:bg-gray-900 border-gray-100 dark:border-gray-800 shadow-sm hover:shadow-md transition-all duration-300 ease-out animate-fade-up"
                     style={{ animationDelay: (i * 60) + 'ms' }}
                   >
-                    <div className="w-16 h-16 rounded-xl overflow-hidden bg-gray-100 dark:bg-gray-800 flex-shrink-0">
-                      <img
-                        src={`${import.meta.env.VITE_API_BASE?.replace('/api','') || 'https://nanban-backend.onrender.com'}/uploads/${item.image}`}
-                        alt={item.name}
-                        className="w-full h-full object-cover"
-                        onError={(e)=>{e.currentTarget.style.display='none'}}
-                      />
-                    </div>
+                      <div className="w-16 h-16 rounded-xl overflow-hidden shadow-sm shrink-0 relative bg-gray-50 dark:bg-gray-800">
+                        <img
+                          src={item.image}
+                          alt={item.name}
+                          className="w-full h-full object-cover absolute inset-0"
+                          onError={(e) => { 
+                            e.currentTarget.style.display = 'none';
+                          }}
+                        />
+                      </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center justify-between gap-2">
                         <div className={`font-medium truncate ${availableNow ? 'text-gray-900 dark:text-gray-100' : 'text-gray-400'}`}>{item.name}</div>
@@ -154,12 +157,12 @@ export default function Cart() {
               style={{ animationDelay: (i * 60) + 'ms' }}
             >
               <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-xl overflow-hidden bg-gray-100 dark:bg-gray-800 flex-shrink-0">
-                <img
-                  src={`${import.meta.env.VITE_API_BASE?.replace('/api','') || 'https://nanban-backend.onrender.com'}/uploads/${item.image}`}
-                  alt={item.name}
-                  className="w-full h-full object-cover"
-                  onError={(e)=>{e.currentTarget.style.display='none'}}
-                />
+                  <img
+                    src={item.image}
+                    alt={item.name}
+                    className="w-full h-full object-cover"
+                    onError={(e)=>{e.currentTarget.style.display='none'}}
+                  />
               </div>
               <div className="flex-1 min-w-0">
                 <div className="flex items-start justify-between gap-3">
@@ -229,13 +232,15 @@ export default function Cart() {
                 className="card flex items-center gap-3 p-3 rounded-2xl bg-white dark:bg-gray-900 border-gray-100 dark:border-gray-800 shadow-sm hover:shadow-md transition-all duration-300 ease-out animate-fade-up"
                 style={{ animationDelay: (i * 60) + 'ms' }}
               >
-                <div className="w-16 h-16 rounded-xl overflow-hidden bg-gray-100 dark:bg-gray-800 flex-shrink-0">
-                  <img
-                    src={`${import.meta.env.VITE_API_BASE?.replace('/api','') || 'https://nanban-backend.onrender.com'}/uploads/${item.image}`}
-                    alt={item.name}
-                    className="w-full h-full object-cover"
-                    onError={(e)=>{e.currentTarget.style.display='none'}}
-                  />
+                <div className="w-10 h-10 rounded-lg overflow-hidden shrink-0 border border-gray-100 dark:border-gray-800 bg-gray-50 dark:bg-gray-800 relative">
+                    <img
+                      src={item.image}
+                      alt={item.name}
+                      className="w-full h-full object-cover absolute inset-0"
+                      onError={(e) => { 
+                        e.currentTarget.style.display = 'none';
+                      }}
+                    />
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center justify-between gap-2">

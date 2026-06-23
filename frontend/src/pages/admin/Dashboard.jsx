@@ -6,10 +6,12 @@ import Overview from './Overview'
 import Hero from './Hero'
 import Categories from './Categories'
 import Customers from './Customers'
+import AdminFooter from './AdminFooter'
 import LiveOrders from './LiveOrders'
 import AdminSidebar from '../../components/admin/Sidebar'
 import { useAuth } from '../../context/AuthContext'
 import api from '../../lib/api'
+import { getLocalImageSrc } from '../../utils/imageHelper'
 
 export default function Dashboard() {
   const [tab, setTab] = useState('orders')
@@ -106,7 +108,7 @@ export default function Dashboard() {
                 <div className="w-10 h-10 rounded-md overflow-hidden bg-gray-100">
                   {quickStats.topItem.image && (
                     <img
-                      src={`${import.meta.env.VITE_API_BASE?.replace('/api','') || 'https://nanban-backend.onrender.com'}/uploads/${quickStats.topItem.image}`}
+                      src={getLocalImageSrc(quickStats.topItem.name)}
                       alt={quickStats.topItem.name}
                       className="w-full h-full object-cover"
                       onError={e => { e.currentTarget.style.display = 'none' }}
@@ -163,6 +165,7 @@ export default function Dashboard() {
             <option value="reports">Reports</option>
             <option value="hero">Hero</option>
             <option value="customers">Customers</option>
+            <option value="footer">Footer</option>
           </select>
         </div>
 
@@ -174,6 +177,7 @@ export default function Dashboard() {
         {tab === 'reports' && <Reports />}
         {tab === 'hero' && <Hero />}
         {tab === 'customers' && <Customers />}
+        {tab === 'footer' && <AdminFooter />}
       </div>
     </div>
   )

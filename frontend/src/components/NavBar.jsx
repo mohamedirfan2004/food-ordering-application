@@ -81,16 +81,6 @@ export default function NavBar() {
         </div>
       </header>
 
-      {/* 2. Mobile Bottom Navigation Bar (Fixed) */}
-      {!isAdminRoute && (
-        <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-white/90 dark:bg-gray-950/90 backdrop-blur-lg border-t border-gray-100 dark:border-gray-800 px-6 pb-6 pt-3 transition-colors duration-500">
-          <div className="flex justify-between items-center max-w-md mx-auto">
-            <MobileTab to="/" icon={<Home size={24} />} label="Home" />
-            <MobileTab to="/cart" icon={<ShoppingCart size={24} />} label="Cart" badge={cartCount} />
-            <MobileTab to="/history" icon={<Clock size={24} />} label="History" />
-          </div>
-        </nav>
-      )}
     </>
   )
 }
@@ -119,30 +109,3 @@ function NavOption({ to, icon, label, badge }) {
   )
 }
 
-function MobileTab({ to, icon, label, badge }) {
-  return (
-    <NavLink
-      to={to}
-      className={({ isActive }) => `
-        flex flex-col items-center gap-1 transition-all duration-300
-        ${isActive 
-          ? 'text-orange-600 dark:text-orange-400 scale-110' 
-          : 'text-gray-400 dark:text-gray-600'}
-      `}
-    >
-      <div className="relative">
-        {icon}
-        {badge > 0 && (
-          <motion.span 
-            initial={{ scale: 0 }}
-            animate={{ scale: 1 }}
-            className="absolute -top-1.5 -right-1.5 bg-orange-600 text-white text-[9px] font-bold h-4 w-4 flex items-center justify-center rounded-full ring-2 ring-white dark:ring-gray-950"
-          >
-            {badge}
-          </motion.span>
-        )}
-      </div>
-      <span className="text-[10px] font-bold uppercase tracking-wider">{label}</span>
-    </NavLink>
-  )
-}

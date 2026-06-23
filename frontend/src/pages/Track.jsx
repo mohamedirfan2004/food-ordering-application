@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react'
 import { useLocation } from 'react-router-dom'
 import api from '../lib/api'
+import { getLocalImageSrc } from '../utils/imageHelper'
 
 const statusBadge = (status) => {
   const base = 'badge'
@@ -192,8 +193,8 @@ export default function Track() {
                 return acc;
               }, {})).map((it, idx) => (
                 <div key={idx} className="flex items-center gap-3">
-                  <div className="w-12 h-12 rounded-lg overflow-hidden bg-gray-100 dark:bg-gray-800 flex-shrink-0">
-                    <img src={`${import.meta.env.VITE_API_BASE?.replace('/api','') || 'https://nanban-backend.onrender.com'}/uploads/${it.image}`} className="w-full h-full object-cover" onError={(e)=>{e.currentTarget.style.display='none'}} />
+                  <div className="flex-shrink-0 w-12 h-12 rounded-lg overflow-hidden bg-gray-100 dark:bg-gray-800">
+                    <img src={getLocalImageSrc(it.name)} alt={it.name} className="w-full h-full object-cover" onError={(e)=>{e.currentTarget.style.display='none'}} />
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="text-sm font-medium text-gray-900 dark:text-white truncate">{it.name}</div>

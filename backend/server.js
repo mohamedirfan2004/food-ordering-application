@@ -47,7 +47,8 @@ app.use(cors({
   credentials: true
 }));
 
-app.use(express.json());
+app.use(express.json({ limit: '50mb' }));
+app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // --- DATABASE CONNECTION CHECK ---
@@ -95,6 +96,7 @@ app.use('/api/offers', offerRoutes);
 app.use('/api/hero', heroRoutes);
 app.use('/api/customers', customerRoutes);
 app.use('/api/settings', settingsRoutes);
+app.use('/api/footer', require('./routes/footer'));
 
 // Default admin user setup
 const Admin = require('./models/Admin');

@@ -49,12 +49,8 @@ exports.getAllMenuItems = async (req, res) => {
 // @access  Private/Admin
 exports.createMenuItem = async (req, res) => {
     try {
-        const { name, description, price, category, isAvailable, availabilityType, scheduleStart, scheduleEnd } = req.body;
-        let image = '';
-
-        if (req.file) {
-            image = req.file.filename;
-        }
+        console.log("Received data:", req.body);
+        const { name, description, price, category, isAvailable, availabilityType, scheduleStart, scheduleEnd, image } = req.body;
 
         const newItem = new FoodItem({
             name,
@@ -71,8 +67,8 @@ exports.createMenuItem = async (req, res) => {
         const item = await newItem.save();
         res.status(201).json(item);
     } catch (err) {
-        console.error('Error creating menu item:', err);
-        res.status(500).json({ message: 'Server error' });
+        console.error('MongoDB Save Error:', err);
+        res.status(500).json({ message: 'Database error', error: err.message });
     }
 };
 
@@ -81,7 +77,8 @@ exports.createMenuItem = async (req, res) => {
 // @access  Private/Admin
 exports.updateMenuItem = async (req, res) => {
     try {
-        const { name, description, price, category, isAvailable, availabilityType, scheduleStart, scheduleEnd } = req.body;
+        console.log("Received data:", req.body);
+        const { name, description, price, category, isAvailable, availabilityType, scheduleStart, scheduleEnd, image } = req.body;
         const updateFields = {
             name,
             description,
@@ -92,17 +89,8 @@ exports.updateMenuItem = async (req, res) => {
             scheduleStart,
             scheduleEnd,
         };
-
-        if (req.file) {
-            // Delete old image if it exists and is not the default
-            const oldItem = await FoodItem.findById(req.params.id);
-            if (oldItem.image && oldItem.image !== 'default-food.jpg') {
-                const imagePath = path.join(__dirname, '../uploads', oldItem.image);
-                if (fs.existsSync(imagePath)) {
-                    fs.unlinkSync(imagePath);
-                }
-            }
-            updateFields.image = req.file.filename;
+        if (image !== undefined) {
+            updateFields.image = image;
         }
 
         const item = await FoodItem.findByIdAndUpdate(
@@ -117,8 +105,8 @@ exports.updateMenuItem = async (req, res) => {
 
         res.json(item);
     } catch (err) {
-        console.error('Error updating menu item:', err);
-        res.status(500).json({ message: 'Server error' });
+        console.error('MongoDB Save Error:', err);
+        res.status(500).json({ message: 'Database error', error: err.message });
     }
 };
 
@@ -133,13 +121,6 @@ exports.deleteMenuItem = async (req, res) => {
             return res.status(404).json({ message: 'Menu item not found' });
         }
 
-        // Delete the associated image if it exists and is not the default
-        if (item.image && item.image !== 'default-food.jpg') {
-            const imagePath = path.join(__dirname, '../uploads', item.image);
-            if (fs.existsSync(imagePath)) {
-                fs.unlinkSync(imagePath);
-            }
-        }
         await FoodItem.findByIdAndDelete(req.params.id);
         res.json({ message: 'Menu item removed' });
     } catch (err) {
