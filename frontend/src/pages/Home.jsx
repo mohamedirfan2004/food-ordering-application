@@ -64,6 +64,7 @@ export default function Home() {
             src={heroImage}
             alt="Hero"
             className="absolute inset-0 h-full w-full object-cover"
+            loading="lazy"
           />
           <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/40 to-black/80" />
           <div className="relative h-full flex items-center px-6 sm:px-10">
@@ -110,6 +111,7 @@ export default function Home() {
                         src={c.image} 
                         alt={c.name} 
                         className="w-full h-full object-cover"
+                        loading="lazy"
                         onError={(e) => {
                           e.currentTarget.style.display = 'none';
                           e.currentTarget.nextElementSibling.style.display = 'block';

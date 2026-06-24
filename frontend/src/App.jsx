@@ -1,14 +1,15 @@
+import React, { useEffect, Suspense, lazy } from 'react';
 import { Routes, Route, Navigate, Link, useLocation } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import MobileLogin from './components/auth/MobileLogin';
 import Home from './pages/Home';
 import Cart from './pages/Cart';
-import Checkout from './pages/Checkout';
-import Track from './pages/Track';
-import AdminLogin from './pages/AdminLogin';
-import Dashboard from './pages/admin/Dashboard';
-import OrderPrint from './pages/admin/OrderPrint';
-import TableOrder from './pages/TableOrder';
+const Checkout = lazy(() => import('./pages/Checkout'));
+const Track = lazy(() => import('./pages/Track'));
+const AdminLogin = lazy(() => import('./pages/AdminLogin'));
+const Dashboard = lazy(() => import('./pages/admin/Dashboard'));
+const OrderPrint = lazy(() => import('./pages/admin/OrderPrint'));
+const TableOrder = lazy(() => import('./pages/TableOrder'));
 import { CartProvider } from './context/CartContext';
 import NavBar from './components/NavBar';
 import BottomNav from './components/BottomNav';
@@ -16,7 +17,6 @@ import Menu from './pages/Menu';
 import { ToastProvider } from './context/ToastContext';
 import { ConfirmProvider } from './context/ConfirmContext';
 import GeofenceGuard from './components/GeofenceGuard';
-import { useEffect } from 'react';
 
 function AdminProtectedRoute({ children }) {
   const { adminToken, loading } = useAuth();
@@ -48,6 +48,11 @@ function AppContent() {
       {!isAdminLogin && <NavBar />}
       <main className={`${isAdminRoute ? (isAdminLogin ? 'flex-1' : 'px-4 lg:px-8 py-4 flex-1') : 'container py-6 flex-1 pb-24 md:pb-6'} transition-colors duration-500 ease-in-out`}>
         <GeofenceGuard>
+          <Suspense fallback={
+            <div className="flex-1 flex items-center justify-center p-8">
+              <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-orange-500"></div>
+            </div>
+          }>
           <Routes>
           {/* Public Routes */}
           <Route path="/login" element={<MobileLogin />} />
@@ -87,7 +92,8 @@ function AppContent() {
               </div>
             }
           />
-        </Routes>
+          </Routes>
+          </Suspense>
         </GeofenceGuard>
       </main>
       {!isAdminLogin && (

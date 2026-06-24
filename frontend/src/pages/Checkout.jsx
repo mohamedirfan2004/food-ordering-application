@@ -245,9 +245,9 @@ export default function Checkout() {
               
               <button 
                 type="submit"
-                disabled={loading || !isFormValid()} 
+                disabled={loading || !isFormValid() || items.length === 0} 
                 className={`w-full py-4 rounded-2xl font-bold text-lg shadow-lg transform transition active:scale-[0.98] ${
-                  loading || !isFormValid() 
+                  loading || !isFormValid() || items.length === 0
                     ? 'bg-gray-200 dark:bg-gray-800 text-gray-400 dark:text-gray-500 cursor-not-allowed shadow-none' 
                     : 'bg-orange-600 text-white hover:bg-orange-700 hover:shadow-orange-200'
                 }`}

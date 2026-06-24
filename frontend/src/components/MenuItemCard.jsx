@@ -23,6 +23,7 @@ export default function MenuItemCard({ item }) {
           src={item.image}
           alt={item.name}
           className="w-full h-full object-cover absolute inset-0"
+          loading="lazy"
           onError={(e) => { 
             e.currentTarget.style.display = 'none';
           }}
@@ -42,7 +43,7 @@ export default function MenuItemCard({ item }) {
         {/* Top: Title & Indicator */}
         <div>
           <div className="flex items-start justify-between gap-1 mb-1">
-            <h3 className="font-bold text-gray-900 dark:text-gray-100 text-sm sm:text-base leading-tight truncate">
+            <h3 className="font-bold text-gray-900 dark:text-gray-100 text-sm sm:text-base leading-tight line-clamp-2">
               {item.name}
             </h3>
             <div className={`shrink-0 w-3.5 h-3.5 border flex items-center justify-center rounded-[2px] mt-0.5 ${isVeg ? 'border-green-600' : 'border-red-600'}`}>

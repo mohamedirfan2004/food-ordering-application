@@ -200,7 +200,7 @@ export default function Track() {
                     <div className="text-sm font-medium text-gray-900 dark:text-white truncate">{it.name}</div>
                     <div className="text-xs text-gray-500">Qty: {it.quantity}</div>
                   </div>
-                  <div className="text-sm font-semibold text-gray-900 dark:text-white">₹{it.price * it.quantity}</div>
+                  <div className="text-sm font-semibold text-gray-900 dark:text-white">₹{(it.price * it.quantity).toFixed(2)}</div>
                 </div>
               ))}
             </div>
@@ -224,7 +224,7 @@ export default function Track() {
               <div className="text-xs text-gray-500 dark:text-gray-400 italic">Order status updates automatically every 6s.</div>
               <div className="flex flex-col items-end">
                 <span className="text-xs text-gray-500 uppercase font-bold tracking-tighter">Grand Total</span>
-                <span className="text-xl font-black text-orange-600 dark:text-orange-400">₹{o.totalAmount}</span>
+                <span className="text-xl font-black text-orange-600 dark:text-orange-400">₹{Number(o.totalAmount || 0).toFixed(2)}</span>
               </div>
             </div>
           </div>

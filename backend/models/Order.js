@@ -33,7 +33,8 @@ const orderSchema = new mongoose.Schema({
   phone: {
     type: String,
     required: true,
-    trim: true
+    trim: true,
+    index: true
   },
   address: {
     type: String,
@@ -42,7 +43,8 @@ const orderSchema = new mongoose.Schema({
   },
   table: {
     type: String,
-    default: ''
+    default: '',
+    index: true
   },
   items: [orderItemSchema],
   totalAmount: {
@@ -52,7 +54,8 @@ const orderSchema = new mongoose.Schema({
   status: {
     type: String,
     enum: ['pending', 'preparing', 'completed', 'cancelled'],
-    default: 'pending'
+    default: 'pending',
+    index: true
   },
   orderNumber: {
     type: String,
